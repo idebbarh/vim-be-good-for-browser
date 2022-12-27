@@ -1,8 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../features/counterSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import cursorPosReducer from "../features/cursorPosSlice.js";
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    cursorPos: cursorPosReducer,
   },
 });

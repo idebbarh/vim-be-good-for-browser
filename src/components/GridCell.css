@@ -1,4 +1,8 @@
-.gridCell{
-    width: 10px;
-    border: 1px solid white;
+.gridCell {
+  width: 10px;
+  height: 100%;
+}
+.gridCell--haveCursor {
+  background-color: white;
+  color: black;
 }

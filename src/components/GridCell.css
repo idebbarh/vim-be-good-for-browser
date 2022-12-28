@@ -1,8 +1,17 @@
 .gridCell {
   width: 10px;
+  min-width: 10px;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .gridCell--haveCursor {
   background-color: white;
-  color: black;
+}
+.cellValue {
+  color: var(--text-color);
+}
+.gridCell--haveCursor .cellValue {
+  color: var(--background-color);
 }

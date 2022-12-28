@@ -1,9 +1,13 @@
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
-:root{
-
+:root {
+  --text-color: #8087a5;
+  --background-color: #16161e;
+  --line-number-color: #2b2f43;
 }
-
+body {
+  font-family: "Roboto", sans-serif;
+}

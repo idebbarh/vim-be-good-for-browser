@@ -5,8 +5,9 @@
   padding-left: 15px;
 }
 .gridRow > .number {
-  color: white;
+  color: var(--line-number-color);
   width: 40px;
+  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: flex-end;

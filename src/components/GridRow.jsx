@@ -4,9 +4,13 @@ import GridCell from "./GridCell";
 import { NUM_OF_COLS, INSERTION_COL } from "../App";
 import { selectCursorPos } from "../features/cursorPosSlice";
 import { useSelector } from "react-redux";
+import { selecteRandomValueForSomeGame } from "../features/randomValueForSomeGameSlice";
+import { selectGameInfo } from "../features/gameInfoSlice";
 function GridRow({ rowPos, rowValue }) {
   const [cellsElem, setCellsElem] = useState([]);
   const cursorPos = useSelector(selectCursorPos);
+  const gameInfo = useSelector(selectGameInfo);
+  const randomValueForSomeGame = useSelector(selecteRandomValueForSomeGame);
   useEffect(() => {
     let cellsList = [];
     let indexCounter = 0;
@@ -45,7 +49,7 @@ function GridRow({ rowPos, rowValue }) {
       }
     }
     setCellsElem(cellsList);
-  }, []);
+  }, [rowValue]);
   return (
     <div className="gridRow">
       <span

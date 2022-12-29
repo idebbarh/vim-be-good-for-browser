@@ -5,6 +5,8 @@ const initialState = {
     isGameStarted: false,
     gameType: "relative",
     gameDifficulty: "easy",
+    isGameMenueOpen: false,
+    gameText: "DELETE_ME",
   },
 };
 

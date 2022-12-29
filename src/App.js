@@ -4,115 +4,17 @@ import "./App.css";
 import GameGrid from "./components/GameGrid";
 import { selectCursorPos, setNewValue } from "./features/cursorPosSlice";
 import { selectGameInfo, setGameInfo } from "./features/gameInfoSlice";
+import AVAILABLE_INSERTIONS from "./avialableInsertions";
+import {
+  selecteRandomValueForSomeGame,
+  setRandomValueForSomeGame,
+} from "./features/randomValueForSomeGameSlice";
+import DIFFICULTY_SETTING from "./difficultySetting";
 
 export const NUM_OF_ROWS = 80;
 export const NUM_OF_COLS = 80;
-export const AVAILABLE_INSERTIONS = {
-  1: {
-    text: "VimBeGood is a collection of small games for neovim which are",
-    insertionRow: 1,
-    type: "title",
-  },
-  2: {
-    text: "intended to help you improve your vim proficiency.",
-    insertionRow: 2,
-    type: "title",
-  },
-  3: {
-    text: "delete a line to select the line.  If you delete a difficulty,",
-    insertionRow: 3,
-    type: "title",
-  },
-  4: {
-    text: "it will select that difficulty, but if you delete a game it",
-    insertionRow: 4,
-    type: "title",
-  },
-  5: {
-    text: "will start the game.",
-    insertionRow: 5,
-    type: "title",
-  },
-  7: {
-    text: "Select a Game (delete from the list to select)",
-    insertionRow: 7,
-    type: "title",
-  },
-  8: {
-    text: "----------------------------------------------",
-    insertionRow: 8,
-    type: "title",
-  },
-  9: {
-    text: "[*] relative",
-    insertionRow: 9,
-    type: "game",
-    gameType: "relative",
-  },
-  10: { text: "[*] ci", insertionRow: 10, type: "game", gameType: "ci" },
-  11: { text: "[*] words", insertionRow: 11, type: "game", gameType: "words" },
-  12: { text: "[*] hjkl", insertionRow: 12, type: "game", gameType: "hjkl" },
-  13: {
-    text: "[*] random",
-    insertionRow: 13,
-    type: "game",
-    gameType: "random",
-  },
-  14: {
-    text: "[*] whackamole",
-    insertionRow: 14,
-    type: "game",
-    gameType: "whackamole",
-  },
-
-  16: {
-    text: "Select a Difficulty (delete from the list to select)",
-    insertionRow: 16,
-    type: "title",
-  },
-  17: {
-    text: "----------------------------------------------------",
-    insertionRow: 17,
-    type: "title",
-  },
-  18: {
-    text: "[*] noob",
-    insertionRow: 18,
-    type: "difficulty",
-    gameDifficulty: "noob",
-  },
-  19: {
-    text: "[*] easy",
-    insertionRow: 19,
-    type: "difficulty",
-    gameDifficulty: "easy",
-  },
-  20: {
-    text: "[*] medium",
-    insertionRow: 20,
-    type: "difficulty",
-    gameDifficulty: "medium",
-  },
-  21: {
-    text: "[*] hard",
-    insertionRow: 21,
-    type: "difficulty",
-    gameDifficulty: "hard",
-  },
-  22: {
-    text: "[*] nightmare",
-    insertionRow: 22,
-    type: "difficulty",
-    gameDifficulty: "nightmare",
-  },
-  23: {
-    text: "[*] tpope",
-    insertionRow: 23,
-    type: "difficulty",
-    gameDifficulty: "tpope",
-  },
-};
 export const INSERTION_COL = 5;
+
 function App() {
   const jumpsNumRef = useRef([]);
   const didMount = useRef(false);
@@ -121,29 +23,61 @@ function App() {
   const dispatch = useDispatch();
   const otherPressedKeys = useRef([]);
   const gameInfo = useSelector(selectGameInfo);
+  const randomValueForSomeGame = useSelector(selecteRandomValueForSomeGame);
+  const randomValueForSomeGameRef = useRef(randomValueForSomeGame);
   const gameInfoRef = useRef();
-  console.log(gameInfo);
+  const gameLoopInterval = useRef(null);
   useEffect(() => {
     cursorPosRef.current = cursorPos;
+    randomValueForSomeGameRef.current = randomValueForSomeGame;
+  }, [cursorPos, randomValueForSomeGame]);
+  useEffect(() => {
     gameInfoRef.current = gameInfo;
-  }, [cursorPos, gameInfo]);
-  const changeGameInfo = (pressedKey) => {
-    if (pressedKey === "d" && otherPressedKeys.current.length === 0) {
+    if (gameInfo.isGameStarted) {
+      setNewGameLoopInterval();
+    } else {
+      clearInterval(gameLoopInterval.current);
+    }
+    return () => {
+      clearInterval(gameLoopInterval.current);
+    };
+  }, [gameInfo]);
+  const setNewGameLoopInterval = () => {
+    changeTheRandomValueForSomeGame();
+    gameLoopInterval.current = setInterval(
+      changeTheRandomValueForSomeGame,
+      DIFFICULTY_SETTING[gameInfoRef.current.gameDifficulty]?.roundTime * 1000
+    );
+  };
+  const changeTheRandomValueForSomeGame = () => {
+    const randomRow = Math.floor(Math.random() * 12);
+    dispatch(
+      setRandomValueForSomeGame({
+        randomRow: randomRow,
+        [randomRow]: {
+          text: gameInfoRef.current.gameText,
+          insertionRow: randomRow,
+          type: "randomValueForSomeGame",
+        },
+      })
+    );
+  };
+  const changeGameState = (pressedKey) => {
+    if (otherPressedKeys.current.length === 0) {
       otherPressedKeys.current = [pressedKey];
       return;
     }
     if (
-      (gameInfo === null || gameInfo.isGameStarted === false) &&
-      pressedKey === "d" &&
+      !gameInfoRef.current.isGameStarted &&
       cursorPosRef.current[0] in AVAILABLE_INSERTIONS
     ) {
-      otherPressedKeys.current = [];
       if (AVAILABLE_INSERTIONS[cursorPosRef.current[0]].type === "game") {
         dispatch(
           setGameInfo({
             ...gameInfoRef.current,
             isGameStarted: true,
             gameType: AVAILABLE_INSERTIONS[cursorPosRef.current[0]].gameType,
+            gameText: AVAILABLE_INSERTIONS[cursorPosRef.current[0]].gameText,
           })
         );
       } else if (
@@ -159,10 +93,26 @@ function App() {
       }
       return;
     }
-    if (pressedKey === "d") {
+    const numberOfRandomRow = randomValueForSomeGameRef.current?.randomRow;
+    if (
+      gameInfoRef.current.isGameStarted &&
+      cursorPosRef.current[0] === numberOfRandomRow
+    ) {
       otherPressedKeys.current = [];
+      dispatch(
+        setRandomValueForSomeGame({
+          [numberOfRandomRow]: {
+            ...randomValueForSomeGameRef.current.numberOfRandomRow,
+            text: "",
+          },
+        })
+      );
+      clearInterval(gameLoopInterval.current);
+      setNewGameLoopInterval();
       return;
     }
+    otherPressedKeys.current = [];
+    return;
   };
   const changeCursorPlace = (pressedKey) => {
     const up = pressedKey === "k" && cursorPosRef.current[0] > 0;
@@ -209,7 +159,7 @@ function App() {
             jumpsNumRef.current = [...jumpsNumRef.current, e.key];
           }
         } else if (e.key === "d") {
-          changeGameInfo(e.key);
+          changeGameState(e.key);
         }
       });
     }
@@ -222,7 +172,7 @@ function App() {
             jumpsNumRef.current = [...jumpsNumRef.current, e.key];
           }
         } else if (e.key === "d") {
-          changeGameInfo(e.key);
+          changeGameState(e.key);
         }
       });
     };

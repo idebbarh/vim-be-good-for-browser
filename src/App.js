@@ -62,11 +62,13 @@ function App() {
       })
     );
   };
-  const changeGameState = (pressedKey) => {
+  const dPressHandler = (pressedKey) => {
     if (otherPressedKeys.current.length === 0) {
       otherPressedKeys.current = [pressedKey];
       return;
     }
+    otherPressedKeys.current = [];
+    jumpsNumRef.current = [];
     if (
       !gameInfoRef.current.isGameStarted &&
       cursorPosRef.current[0] in AVAILABLE_INSERTIONS
@@ -98,7 +100,6 @@ function App() {
       gameInfoRef.current.isGameStarted &&
       cursorPosRef.current[0] === numberOfRandomRow
     ) {
-      otherPressedKeys.current = [];
       dispatch(
         setRandomValueForSomeGame({
           [numberOfRandomRow]: {
@@ -111,8 +112,6 @@ function App() {
       setNewGameLoopInterval();
       return;
     }
-    otherPressedKeys.current = [];
-    return;
   };
   const changeCursorPlace = (pressedKey) => {
     const up = pressedKey === "k" && cursorPosRef.current[0] > 0;
@@ -153,13 +152,15 @@ function App() {
       didMount.current = true;
       document.addEventListener("keyup", (e) => {
         if (["k", "j", "l", "h"].includes(e.key)) {
+          otherPressedKeys.current = [];
           changeCursorPlace(e.key);
         } else if (!isNaN(e.key)) {
           if (e.key !== "0" || jumpsNumRef.current.length > 0) {
+            otherPressedKeys.current = [];
             jumpsNumRef.current = [...jumpsNumRef.current, e.key];
           }
         } else if (e.key === "d") {
-          changeGameState(e.key);
+          dPressHandler(e.key);
         }
       });
     }
@@ -172,7 +173,7 @@ function App() {
             jumpsNumRef.current = [...jumpsNumRef.current, e.key];
           }
         } else if (e.key === "d") {
-          changeGameState(e.key);
+          dPressHandler(e.key);
         }
       });
     };

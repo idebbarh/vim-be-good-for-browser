@@ -7,6 +7,7 @@ const initialState = {
     gameDifficulty: "easy",
     isGameMenueOpen: false,
     gameText: "DELETE_ME",
+    isGameCountdownDone: false,
   },
 };
 
@@ -16,6 +17,9 @@ export const gameInfoSlice = createSlice({
   reducers: {
     setGameInfo: (state, action) => {
       state.value = action.payload;
+    },
+    resitGameInfo: (state) => {
+      state.value = initialState.value;
     },
   },
 });

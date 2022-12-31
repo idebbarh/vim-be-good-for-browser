@@ -18,7 +18,9 @@ function GameGrid() {
       ? randomValueForSomeGame
       : AVAILABLE_INSERTIONS;
     for (let key in mainValue) {
-      textsPosInGrid.push(key);
+      if (!isNaN(key)) {
+        textsPosInGrid.push(key);
+      }
     }
     for (let i = 0; i < NUM_OF_ROWS; i++) {
       rowsList.push(

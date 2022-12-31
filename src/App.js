@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "./App.css";
 import GameGrid from "./components/GameGrid";
@@ -14,7 +14,10 @@ import DIFFICULTY_SETTING from "./difficultySetting";
 export const NUM_OF_ROWS = 80;
 export const NUM_OF_COLS = 80;
 export const INSERTION_COL = 5;
-
+export const NUMBER_OF_ROUNDES = 10;
+export function delayFunction(delayTime) {
+  return new Promise((resolve) => setTimeout(resolve, delayTime));
+}
 function App() {
   const jumpsNumRef = useRef([]);
   const didMount = useRef(false);
@@ -25,8 +28,10 @@ function App() {
   const gameInfo = useSelector(selectGameInfo);
   const randomValueForSomeGame = useSelector(selecteRandomValueForSomeGame);
   const randomValueForSomeGameRef = useRef(randomValueForSomeGame);
-  const gameInfoRef = useRef();
+  const gameInfoRef = useRef(gameInfo);
   const gameLoopInterval = useRef(null);
+  const isWinInTheRound = useRef(false);
+
   useEffect(() => {
     cursorPosRef.current = cursorPos;
     randomValueForSomeGameRef.current = randomValueForSomeGame;
@@ -34,7 +39,11 @@ function App() {
   useEffect(() => {
     gameInfoRef.current = gameInfo;
     if (gameInfo.isGameStarted) {
-      setNewGameLoopInterval();
+      if (!gameInfo.isGameCountdownDone) {
+        startGameCountdown();
+      } else {
+        setNewGameLoopInterval();
+      }
     } else {
       clearInterval(gameLoopInterval.current);
     }
@@ -50,16 +59,55 @@ function App() {
     );
   };
   const changeTheRandomValueForSomeGame = () => {
-    const randomRow = Math.floor(Math.random() * 12);
+    const randomRow = Math.floor(Math.random() * 12) + 1;
+    let currentRound = 0;
+    let currentScore = 0;
+    if (randomValueForSomeGameRef.current.currentRandomRow) {
+      const oldRandomRow = randomValueForSomeGameRef.current.currentRandomRow;
+      currentRound =
+        randomValueForSomeGameRef.current[oldRandomRow].gameCurrentRound + 1;
+      currentScore =
+        randomValueForSomeGameRef.current[oldRandomRow].gameCurrentScore;
+
+      if (isWinInTheRound.current) {
+        currentScore++;
+      }
+    }
+    console.log(currentScore);
     dispatch(
       setRandomValueForSomeGame({
-        randomRow: randomRow,
+        0: {
+          text: `Round ${currentRound}/${NUMBER_OF_ROUNDES}`,
+          insertionRow: 0,
+          type: "constantText",
+        },
+        currentRandomRow: randomRow,
         [randomRow]: {
           text: gameInfoRef.current.gameText,
           insertionRow: randomRow,
           type: "randomValueForSomeGame",
+          gameCurrentRound: currentRound,
+          gameCurrentScore: currentScore,
         },
       })
+    );
+    isWinInTheRound.current = false;
+  };
+  const startGameCountdown = async () => {
+    for (let i = 0; i < 4; i++) {
+      dispatch(
+        setRandomValueForSomeGame({
+          0: {
+            text: `Game Start In ${i}`,
+            insertionRow: 0,
+            type: "constantText",
+          },
+        })
+      );
+      await delayFunction(1000);
+    }
+    dispatch(
+      setGameInfo({ ...gameInfoRef.current, isGameCountdownDone: true })
     );
   };
   const dPressHandler = (pressedKey) => {
@@ -95,19 +143,13 @@ function App() {
       }
       return;
     }
-    const numberOfRandomRow = randomValueForSomeGameRef.current?.randomRow;
+    const numberOfRandomRow =
+      randomValueForSomeGameRef.current?.currentRandomRow;
     if (
       gameInfoRef.current.isGameStarted &&
       cursorPosRef.current[0] === numberOfRandomRow
     ) {
-      dispatch(
-        setRandomValueForSomeGame({
-          [numberOfRandomRow]: {
-            ...randomValueForSomeGameRef.current.numberOfRandomRow,
-            text: "",
-          },
-        })
-      );
+      isWinInTheRound.current = true;
       clearInterval(gameLoopInterval.current);
       setNewGameLoopInterval();
       return;

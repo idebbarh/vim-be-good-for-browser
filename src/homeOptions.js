@@ -1,4 +1,4 @@
-const AVAILABLE_INSERTIONS = {
+const HOME_OPTIONS = {
   1: {
     text: "VimBeGood is a collection of small games for neovim which are",
     insertionRow: 1,
@@ -104,4 +104,4 @@ const AVAILABLE_INSERTIONS = {
     gameDifficulty: "tpope",
   },
 };
-export default AVAILABLE_INSERTIONS;
+export default HOME_OPTIONS;

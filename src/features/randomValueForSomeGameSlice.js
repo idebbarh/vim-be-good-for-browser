@@ -11,10 +11,13 @@ export const randomValueForSomeGameSlice = createSlice({
     setRandomValueForSomeGame: (state, action) => {
       state.value = action.payload;
     },
+    resitRandomValueForSomeGame: (state) => {
+      state.value = initialState.value;
+    },
   },
 });
 
-export const { setRandomValueForSomeGame } =
+export const { setRandomValueForSomeGame, resitRandomValueForSomeGame } =
   randomValueForSomeGameSlice.actions;
 
 export const selecteRandomValueForSomeGame = (state) =>

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { NUM_OF_ROWS } from "../App";
 import "./GameGrid.css";
 import GridRow from "./GridRow";
-import AVAILABLE_INSERTIONS from "../avialableInsertions";
+import HOME_OPTIONS from "../homeOptions.js";
+import END_OF_THE_GAME_OPTIONS from "../endOfTheGameOptions";
 import { useSelector } from "react-redux";
 import { selectGameInfo } from "../features/gameInfoSlice";
 import { selecteRandomValueForSomeGame } from "../features/randomValueForSomeGameSlice";
@@ -16,7 +17,9 @@ function GameGrid() {
     let textsPosInGrid = [];
     const mainValue = gameInfo.isGameStarted
       ? randomValueForSomeGame
-      : AVAILABLE_INSERTIONS;
+      : gameInfo.isEndGameOptinsOpen
+      ? END_OF_THE_GAME_OPTIONS
+      : HOME_OPTIONS;
     for (let key in mainValue) {
       if (!isNaN(key)) {
         textsPosInGrid.push(key);

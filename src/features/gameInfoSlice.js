@@ -5,7 +5,7 @@ const initialState = {
     isGameStarted: false,
     gameType: "relative",
     gameDifficulty: "easy",
-    isGameMenueOpen: false,
+    isEndGameOptinsOpen: false,
     gameText: "DELETE_ME",
     isGameCountdownDone: false,
   },
@@ -24,7 +24,7 @@ export const gameInfoSlice = createSlice({
   },
 });
 
-export const { setGameInfo } = gameInfoSlice.actions;
+export const { setGameInfo, resitGameInfo } = gameInfoSlice.actions;
 
 export const selectGameInfo = (state) => state.gameInfo.value;
 

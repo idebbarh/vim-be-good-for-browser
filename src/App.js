@@ -3,13 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import "./App.css";
 import GameGrid from "./components/GameGrid";
 import { selectCursorPos, setNewValue } from "./features/cursorPosSlice";
-import { selectGameInfo, setGameInfo } from "./features/gameInfoSlice";
-import AVAILABLE_INSERTIONS from "./avialableInsertions";
 import {
+  selectGameInfo,
+  setGameInfo,
+  resitGameInfo,
+} from "./features/gameInfoSlice";
+import HOME_OPTIONS from "./homeOptions.js";
+import {
+  resitRandomValueForSomeGame,
   selecteRandomValueForSomeGame,
   setRandomValueForSomeGame,
 } from "./features/randomValueForSomeGameSlice";
 import DIFFICULTY_SETTING from "./difficultySetting";
+import END_OF_THE_GAME_OPTIONS from "./endOfTheGameOptions";
 
 export const NUM_OF_ROWS = 80;
 export const NUM_OF_COLS = 80;
@@ -73,7 +79,15 @@ function App() {
         currentScore++;
       }
     }
-    console.log(currentScore);
+    if (currentRound > NUMBER_OF_ROUNDES) {
+      dispatch(
+        setGameInfo({
+          ...gameInfoRef.current,
+          isGameStarted: false,
+          isEndGameOptinsOpen: true,
+        })
+      );
+    }
     dispatch(
       setRandomValueForSomeGame({
         0: {
@@ -94,7 +108,7 @@ function App() {
     isWinInTheRound.current = false;
   };
   const startGameCountdown = async () => {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 3; i >= 0; i--) {
       dispatch(
         setRandomValueForSomeGame({
           0: {
@@ -119,25 +133,24 @@ function App() {
     jumpsNumRef.current = [];
     if (
       !gameInfoRef.current.isGameStarted &&
-      cursorPosRef.current[0] in AVAILABLE_INSERTIONS
+      !gameInfoRef.current.isEndGameOptinsOpen &&
+      cursorPosRef.current[0] in HOME_OPTIONS
     ) {
-      if (AVAILABLE_INSERTIONS[cursorPosRef.current[0]].type === "game") {
+      if (HOME_OPTIONS[cursorPosRef.current[0]].type === "game") {
         dispatch(
           setGameInfo({
             ...gameInfoRef.current,
             isGameStarted: true,
-            gameType: AVAILABLE_INSERTIONS[cursorPosRef.current[0]].gameType,
-            gameText: AVAILABLE_INSERTIONS[cursorPosRef.current[0]].gameText,
+            gameType: HOME_OPTIONS[cursorPosRef.current[0]].gameType,
+            gameText: HOME_OPTIONS[cursorPosRef.current[0]].gameText,
           })
         );
-      } else if (
-        AVAILABLE_INSERTIONS[cursorPosRef.current[0]].type === "difficulty"
-      ) {
+      } else if (HOME_OPTIONS[cursorPosRef.current[0]].type === "difficulty") {
         dispatch(
           setGameInfo({
             ...gameInfoRef.current,
             gameDifficulty:
-              AVAILABLE_INSERTIONS[cursorPosRef.current[0]].gameDifficulty,
+              HOME_OPTIONS[cursorPosRef.current[0]].gameDifficulty,
           })
         );
       }
@@ -152,6 +165,31 @@ function App() {
       isWinInTheRound.current = true;
       clearInterval(gameLoopInterval.current);
       setNewGameLoopInterval();
+      return;
+    }
+    if (
+      gameInfoRef.current.isEndGameOptinsOpen &&
+      cursorPosRef.current[0] in END_OF_THE_GAME_OPTIONS
+    ) {
+      if (END_OF_THE_GAME_OPTIONS[cursorPosRef.current[0]].type === "menu") {
+        dispatch(resitGameInfo());
+        /* dispatch(resitRandomValueForSomeGame()); */
+      } else if (
+        END_OF_THE_GAME_OPTIONS[cursorPosRef.current[0]].type === "replay"
+      ) {
+        dispatch(
+          setGameInfo({
+            ...gameInfoRef.current,
+            isGameStarted: true,
+            isEndGameOptinsOpen: false,
+            isGameCountdownDone: false,
+          })
+        );
+      } else if (
+        END_OF_THE_GAME_OPTIONS[cursorPosRef.current[0]].type === "quit"
+      ) {
+        window.close();
+      }
       return;
     }
   };

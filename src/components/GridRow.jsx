@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./GridRow.css";
 import GridCell from "./GridCell";
-import { NUM_OF_COLS, INSERTION_COL } from "../App";
 import { selectCursorPos } from "../features/cursorPosSlice";
 import { useSelector } from "react-redux";
-import { selecteRandomValueForSomeGame } from "../features/randomValueForSomeGameSlice";
-import { selectGameInfo } from "../features/gameInfoSlice";
+import { NUM_OF_COLS } from "../constantValues";
 function GridRow({ rowPos, rowValue }) {
   const [cellsElem, setCellsElem] = useState([]);
   const cursorPos = useSelector(selectCursorPos);
-  const gameInfo = useSelector(selectGameInfo);
-  const randomValueForSomeGame = useSelector(selecteRandomValueForSomeGame);
   useEffect(() => {
     let cellsList = [];
     let indexCounter = 0;
@@ -21,19 +17,21 @@ function GridRow({ rowPos, rowValue }) {
           cellPos={[rowPos, i]}
           cellValue={
             rowValue !== null &&
-            INSERTION_COL <= i &&
+            rowValue?.insertionCol <= i &&
             indexCounter < rowValue?.text?.length
               ? rowValue?.text[indexCounter]
               : null
           }
           gameType={
-            rowValue !== null && INSERTION_COL <= i && rowValue?.type === "game"
+            rowValue !== null &&
+            rowValue?.insertionCol <= i &&
+            rowValue?.type === "game"
               ? rowValue?.gameType
               : null
           }
           gameDifficulty={
             rowValue !== null &&
-            INSERTION_COL <= i &&
+            rowValue?.insertionCol <= i &&
             rowValue?.type === "difficulty"
               ? rowValue?.gameDifficulty
               : null
@@ -41,7 +39,7 @@ function GridRow({ rowPos, rowValue }) {
         />
       );
       if (
-        INSERTION_COL <= i &&
+        rowValue?.insertionCol <= i &&
         rowValue !== null &&
         indexCounter < rowValue?.text?.length
       ) {
@@ -49,7 +47,7 @@ function GridRow({ rowPos, rowValue }) {
       }
     }
     setCellsElem(cellsList);
-  }, [rowValue]);
+  }, [rowValue, rowPos]);
   return (
     <div className="gridRow">
       <span

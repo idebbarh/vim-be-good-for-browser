@@ -10,17 +10,18 @@ import {
 } from "./features/gameInfoSlice";
 import HOME_OPTIONS from "./homeOptions.js";
 import {
-  resitRandomValueForSomeGame,
   selecteRandomValueForSomeGame,
   setRandomValueForSomeGame,
 } from "./features/randomValueForSomeGameSlice";
 import DIFFICULTY_SETTING from "./difficultySetting";
 import END_OF_THE_GAME_OPTIONS from "./endOfTheGameOptions";
+import {
+  INSERTION_COL,
+  NUMBER_OF_ROUNDES,
+  NUM_OF_COLS,
+  NUM_OF_ROWS,
+} from "./constantValues";
 
-export const NUM_OF_ROWS = 80;
-export const NUM_OF_COLS = 80;
-export const INSERTION_COL = 5;
-export const NUMBER_OF_ROUNDES = 10;
 export function delayFunction(delayTime) {
   return new Promise((resolve) => setTimeout(resolve, delayTime));
 }
@@ -66,6 +67,9 @@ function App() {
   };
   const changeTheRandomValueForSomeGame = () => {
     const randomRow = Math.floor(Math.random() * 12) + 1;
+    const randomCol = ["hjkl"].includes(gameInfoRef.current?.gameType)
+      ? Math.floor(Math.random() * 12) + INSERTION_COL
+      : INSERTION_COL;
     let currentRound = 0;
     let currentScore = 0;
     if (randomValueForSomeGameRef.current.currentRandomRow) {
@@ -94,11 +98,13 @@ function App() {
           text: `Round ${currentRound}/${NUMBER_OF_ROUNDES}`,
           insertionRow: 0,
           type: "constantText",
+          insertionCol: INSERTION_COL,
         },
         currentRandomRow: randomRow,
         [randomRow]: {
           text: gameInfoRef.current.gameText,
           insertionRow: randomRow,
+          insertionCol: randomCol,
           type: "randomValueForSomeGame",
           gameCurrentRound: currentRound,
           gameCurrentScore: currentScore,
@@ -115,6 +121,7 @@ function App() {
             text: `Game Start In ${i}`,
             insertionRow: 0,
             type: "constantText",
+            insertionCol: INSERTION_COL,
           },
         })
       );
@@ -193,6 +200,23 @@ function App() {
       return;
     }
   };
+  const xPressHandler = () => {
+    const numberOfRandomRow =
+      randomValueForSomeGameRef.current?.currentRandomRow;
+    const numberOfRandomCol =
+      randomValueForSomeGameRef.current[numberOfRandomRow]?.insertionCol;
+    if (
+      gameInfoRef.current.isGameStarted &&
+      gameInfoRef.current.gameType === "hjkl" &&
+      cursorPosRef.current[0] === numberOfRandomRow &&
+      cursorPosRef.current[1] === numberOfRandomCol
+    ) {
+      isWinInTheRound.current = true;
+      clearInterval(gameLoopInterval.current);
+      setNewGameLoopInterval();
+      return;
+    }
+  };
   const changeCursorPlace = (pressedKey) => {
     const up = pressedKey === "k" && cursorPosRef.current[0] > 0;
     const down = pressedKey === "j" && cursorPosRef.current[0] < NUM_OF_ROWS;
@@ -227,34 +251,32 @@ function App() {
       ])
     );
   };
+  const allPressedButtonsHandler = (e) => {
+    if (["k", "j", "l", "h"].includes(e.key)) {
+      otherPressedKeys.current = [];
+      changeCursorPlace(e.key);
+    } else if (!isNaN(e.key)) {
+      if (e.key !== "0" || jumpsNumRef.current.length > 0) {
+        otherPressedKeys.current = [];
+        jumpsNumRef.current = [...jumpsNumRef.current, e.key];
+      }
+    } else if (e.key === "d") {
+      dPressHandler(e.key);
+    } else if (e.key === "x") {
+      otherPressedKeys.current = [];
+      xPressHandler();
+    }
+  };
   useEffect(() => {
     if (!didMount.current) {
       didMount.current = true;
       document.addEventListener("keyup", (e) => {
-        if (["k", "j", "l", "h"].includes(e.key)) {
-          otherPressedKeys.current = [];
-          changeCursorPlace(e.key);
-        } else if (!isNaN(e.key)) {
-          if (e.key !== "0" || jumpsNumRef.current.length > 0) {
-            otherPressedKeys.current = [];
-            jumpsNumRef.current = [...jumpsNumRef.current, e.key];
-          }
-        } else if (e.key === "d") {
-          dPressHandler(e.key);
-        }
+        allPressedButtonsHandler(e);
       });
     }
     return () => {
       document.removeEventListener("keyup", (e) => {
-        if (["k", "j", "l", "h"].includes(e.key)) {
-          changeCursorPlace(e.key);
-        } else if (!isNaN(e.key)) {
-          if (e.key !== "0" || jumpsNumRef.current.length > 0) {
-            jumpsNumRef.current = [...jumpsNumRef.current, e.key];
-          }
-        } else if (e.key === "d") {
-          dPressHandler(e.key);
-        }
+        allPressedButtonsHandler(e);
       });
     };
   }, []);

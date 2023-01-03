@@ -40,7 +40,6 @@ function App() {
   const gameLoopInterval = useRef(null);
   const isWinInTheRound = useRef(false);
   const isTheCurrsorInTheRightPosition = useRef(true);
-
   useEffect(() => {
     cursorPosRef.current = cursorPos;
     randomValueForSomeGameRef.current = randomValueForSomeGame;
@@ -51,21 +50,51 @@ function App() {
       if (!gameInfo.isGameCountdownDone) {
         startGameCountdown();
       } else {
-        setNewGameLoopInterval();
+        if (!gameInfo.isGameRunning) {
+          dispatch(
+            setGameInfo({ ...gameInfoRef.current, isGameRunning: true })
+          );
+          setTimeout(() => {
+            setNewGameLoopInterval();
+          });
+        }
       }
     } else {
       clearInterval(gameLoopInterval.current);
     }
-    return () => {
-      clearInterval(gameLoopInterval.current);
-    };
   }, [gameInfo]);
   const setNewGameLoopInterval = () => {
-    changeTheRandomValueForSomeGame();
-    gameLoopInterval.current = setInterval(
-      changeTheRandomValueForSomeGame,
-      DIFFICULTY_SETTING[gameInfoRef.current.gameDifficulty]?.roundTime * 1000
-    );
+    function helper() {
+      if (gameInfoRef.current.isRandomMode) {
+        const randomGame = getRandomGame();
+        dispatch(
+          setGameInfo({
+            ...gameInfoRef.current,
+            gameType: randomGame.gameType,
+            gameText: randomGame.gameText,
+          })
+        );
+      }
+      setTimeout(() => {
+        changeTheRandomValueForSomeGame();
+      });
+    }
+    helper();
+    gameLoopInterval.current = setInterval(() => {
+      helper();
+    }, DIFFICULTY_SETTING[gameInfoRef.current.gameDifficulty]?.roundTime * 1000);
+  };
+  const getRandomGame = () => {
+    let availableGames = [];
+    for (let key in HOME_OPTIONS) {
+      if (
+        HOME_OPTIONS[key].type === "game" &&
+        HOME_OPTIONS[key].gameType !== "random"
+      ) {
+        availableGames.push(HOME_OPTIONS[key]);
+      }
+    }
+    return availableGames[Math.floor(Math.random() * availableGames.length)];
   };
   const changeTheRandomValueForSomeGame = () => {
     const randomRow = Math.floor(Math.random() * 12) + 1;
@@ -84,7 +113,7 @@ function App() {
         currentScore++;
       }
     }
-    if (currentRound > NUMBER_OF_ROUNDES) {
+    if (currentRound === NUMBER_OF_ROUNDES) {
       dispatch(
         setGameInfo({
           ...gameInfoRef.current,
@@ -96,21 +125,23 @@ function App() {
         setEndOfTheGameStatis({
           ...END_OF_THE_GAME_OPTIONS,
           0: {
-            text: `Round ${currentRound - 1}/${NUMBER_OF_ROUNDES}`,
+            text: `Round ${currentRound}/${NUMBER_OF_ROUNDES}`,
             insertionRow: 0,
             type: "statisText",
             insertionCol: INSERTION_COL,
           },
           1: {
-            text: `${
-              currentScore - 1
-            }/${NUMBER_OF_ROUNDES} completed successfully`,
+            text: `${currentScore}/${NUMBER_OF_ROUNDES} completed successfully`,
             insertionRow: 1,
             type: "statisText",
             insertionCol: INSERTION_COL,
           },
           2: {
-            text: `Game Type ${gameInfoRef.current?.gameType}`,
+            text: `Game Type ${
+              gameInfoRef.current?.isRandomMode
+                ? "random"
+                : gameInfoRef.current?.gameType
+            }`,
             insertionRow: 2,
             type: "statisText",
             insertionCol: INSERTION_COL,
@@ -176,12 +207,22 @@ function App() {
       cursorPosRef.current[0] in HOME_OPTIONS
     ) {
       if (HOME_OPTIONS[cursorPosRef.current[0]].type === "game") {
+        const randomGame = getRandomGame();
+        const [gameType, gameText] =
+          HOME_OPTIONS[cursorPosRef.current[0]].gameType === "random"
+            ? [randomGame.gameType, randomGame.gameText]
+            : [
+                HOME_OPTIONS[cursorPosRef.current[0]].gameType,
+                HOME_OPTIONS[cursorPosRef.current[0]].gameText,
+              ];
         dispatch(
           setGameInfo({
             ...gameInfoRef.current,
             isGameStarted: true,
-            gameType: HOME_OPTIONS[cursorPosRef.current[0]].gameType,
-            gameText: HOME_OPTIONS[cursorPosRef.current[0]].gameText,
+            gameType: gameType,
+            gameText: gameText,
+            isRandomMode:
+              HOME_OPTIONS[cursorPosRef.current[0]].gameType === "random",
           })
         );
       } else if (HOME_OPTIONS[cursorPosRef.current[0]].type === "difficulty") {
@@ -201,9 +242,7 @@ function App() {
       gameInfoRef.current.isGameStarted &&
       cursorPosRef.current[0] === numberOfRandomRow
     ) {
-      isWinInTheRound.current = true;
-      clearInterval(gameLoopInterval.current);
-      setNewGameLoopInterval();
+      winInTheRoundHandler();
       return;
     }
     if (
@@ -222,6 +261,7 @@ function App() {
             isGameStarted: true,
             isEndGameOptinsOpen: false,
             isGameCountdownDone: false,
+            isGameRunning: false,
           })
         );
       } else if (
@@ -243,11 +283,15 @@ function App() {
       cursorPosRef.current[0] === numberOfRandomRow &&
       cursorPosRef.current[1] === numberOfRandomCol
     ) {
-      isWinInTheRound.current = true;
-      clearInterval(gameLoopInterval.current);
-      setNewGameLoopInterval();
+      winInTheRoundHandler();
       return;
     }
+  };
+  const winInTheRoundHandler = () => {
+    console.log("clear interval");
+    isWinInTheRound.current = true;
+    clearInterval(gameLoopInterval.current);
+    setNewGameLoopInterval();
   };
   const changeCursorPlace = (pressedKey) => {
     const up = pressedKey === "k" && cursorPosRef.current[0] > 0;

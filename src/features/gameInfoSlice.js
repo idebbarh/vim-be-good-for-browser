@@ -8,6 +8,8 @@ const initialState = {
     isEndGameOptinsOpen: false,
     gameText: "DELETE_ME",
     isGameCountdownDone: false,
+    isRandomMode: false,
+    isGameRunning: false,
   },
 };
 

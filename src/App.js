@@ -21,6 +21,7 @@ import {
   NUM_OF_COLS,
   NUM_OF_ROWS,
 } from "./constantValues";
+import { setEndOfTheGameStatis } from "./features/endOfTheGameStatisSlice";
 
 export function delayFunction(delayTime) {
   return new Promise((resolve) => setTimeout(resolve, delayTime));
@@ -38,6 +39,7 @@ function App() {
   const gameInfoRef = useRef(gameInfo);
   const gameLoopInterval = useRef(null);
   const isWinInTheRound = useRef(false);
+  const isTheCurrsorInTheRightPosition = useRef(true);
 
   useEffect(() => {
     cursorPosRef.current = cursorPos;
@@ -78,7 +80,6 @@ function App() {
         randomValueForSomeGameRef.current[oldRandomRow].gameCurrentRound + 1;
       currentScore =
         randomValueForSomeGameRef.current[oldRandomRow].gameCurrentScore;
-
       if (isWinInTheRound.current) {
         currentScore++;
       }
@@ -89,6 +90,37 @@ function App() {
           ...gameInfoRef.current,
           isGameStarted: false,
           isEndGameOptinsOpen: true,
+        })
+      );
+      dispatch(
+        setEndOfTheGameStatis({
+          ...END_OF_THE_GAME_OPTIONS,
+          0: {
+            text: `Round ${currentRound - 1}/${NUMBER_OF_ROUNDES}`,
+            insertionRow: 0,
+            type: "statisText",
+            insertionCol: INSERTION_COL,
+          },
+          1: {
+            text: `${
+              currentScore - 1
+            }/${NUMBER_OF_ROUNDES} completed successfully`,
+            insertionRow: 1,
+            type: "statisText",
+            insertionCol: INSERTION_COL,
+          },
+          2: {
+            text: `Game Type ${gameInfoRef.current?.gameType}`,
+            insertionRow: 2,
+            type: "statisText",
+            insertionCol: INSERTION_COL,
+          },
+          3: {
+            text: `Game Difficulty ${gameInfoRef.current?.gameDifficulty}`,
+            insertionRow: 3,
+            type: "statisText",
+            insertionCol: INSERTION_COL,
+          },
         })
       );
     }
@@ -262,21 +294,35 @@ function App() {
       }
     } else if (e.key === "d") {
       dPressHandler(e.key);
+      jumpsNumRef.current = [];
     } else if (e.key === "x") {
       otherPressedKeys.current = [];
+      jumpsNumRef.current = [];
       xPressHandler();
     }
   };
   useEffect(() => {
     if (!didMount.current) {
       didMount.current = true;
-      document.addEventListener("keyup", (e) => {
-        allPressedButtonsHandler(e);
+      document.addEventListener("keypress", (e) => {
+        if (isTheCurrsorInTheRightPosition.current) {
+          isTheCurrsorInTheRightPosition.current = false;
+          setTimeout(() => {
+            isTheCurrsorInTheRightPosition.current = true;
+            allPressedButtonsHandler(e);
+          }, 0);
+        }
       });
     }
     return () => {
       document.removeEventListener("keyup", (e) => {
-        allPressedButtonsHandler(e);
+        if (isTheCurrsorInTheRightPosition.current) {
+          isTheCurrsorInTheRightPosition.current = false;
+          setTimeout(() => {
+            isTheCurrsorInTheRightPosition.current = true;
+            allPressedButtonsHandler(e);
+          }, 0);
+        }
       });
     };
   }, []);

@@ -2,15 +2,16 @@ import React, { useEffect, useState } from "react";
 import "./GameGrid.css";
 import GridRow from "./GridRow";
 import HOME_OPTIONS from "../homeOptions.js";
-import END_OF_THE_GAME_OPTIONS from "../endOfTheGameOptions";
 import { useSelector } from "react-redux";
 import { selectGameInfo } from "../features/gameInfoSlice";
 import { selecteRandomValueForSomeGame } from "../features/randomValueForSomeGameSlice";
 import { NUM_OF_ROWS } from "../constantValues";
+import { selectEndOfTheGameStatis } from "../features/endOfTheGameStatisSlice";
 function GameGrid() {
   const [rowsElem, setRowsElem] = useState([]);
   const gameInfo = useSelector(selectGameInfo);
   const randomValueForSomeGame = useSelector(selecteRandomValueForSomeGame);
+  const endOfTheGameStatis = useSelector(selectEndOfTheGameStatis);
   useEffect(() => {
     let rowsList = [];
     let indexCounter = 0;
@@ -18,7 +19,7 @@ function GameGrid() {
     const mainValue = gameInfo.isGameStarted
       ? randomValueForSomeGame
       : gameInfo.isEndGameOptinsOpen
-      ? END_OF_THE_GAME_OPTIONS
+      ? endOfTheGameStatis
       : HOME_OPTIONS;
     for (let key in mainValue) {
       if (!isNaN(key)) {

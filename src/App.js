@@ -288,7 +288,6 @@ function App() {
     }
   };
   const winInTheRoundHandler = () => {
-    console.log("clear interval");
     isWinInTheRound.current = true;
     clearInterval(gameLoopInterval.current);
     setNewGameLoopInterval();

@@ -9,7 +9,7 @@ Vimbegood is a browser-based tool that helps users improve their skills in using
 
 ## How to use
 
-To start using Vimbegood, simply visit the website and choose a game to play. Each game has its own set of instructions, so be sure to read them carefully before starting.
+To start using Vimbegood, simply visit this [website](vim-be-good.netlify.app) and choose a game to play. Each game has its own set of instructions, so be sure to read them carefully before starting.
 
 ## Credits
 
